@@ -1,0 +1,14 @@
+<ul data-bind="foreach: uploads">
+    <li>
+        <span>Enviado: <small data-bind="text: Nome"></small>
+        </span><span>Tamanho: <small data-bind="text: Tamanho"></small>Kb</span>
+        <span>Caminho: <a data-bind="attr:{href: Path}, text:Path"></a></span>
+    </li>
+</ul>
+
+<form action="/api/upload" method="post" enctype="multipart/form-data">
+    <label for="arquivo">Arquivo</label>
+
+    <input name="arquivo" id="arquivo" type="file" value="" />
+    <input type="submit" data-bind="click: enviarArquivo" value="Submit" />
+</form>
