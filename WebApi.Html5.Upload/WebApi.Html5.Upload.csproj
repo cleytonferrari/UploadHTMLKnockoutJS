@@ -43,6 +43,12 @@
       <HintPath>packages\WebGrease.1.3.0\lib\Antlr3.Runtime.dll</HintPath>
     </Reference>
     <Reference Include="Microsoft.CSharp" />
+    <Reference Include="MongoDB.Bson">
+      <HintPath>packages\mongocsharpdriver.1.7\lib\net35\MongoDB.Bson.dll</HintPath>
+    </Reference>
+    <Reference Include="MongoDB.Driver">
+      <HintPath>packages\mongocsharpdriver.1.7\lib\net35\MongoDB.Driver.dll</HintPath>
+    </Reference>
     <Reference Include="Newtonsoft.Json">
       <HintPath>packages\Newtonsoft.Json.4.5.10\lib\net40\Newtonsoft.Json.dll</HintPath>
       <Private>True</Private>
@@ -128,6 +134,7 @@
     <Compile Include="App_Start\WebApiConfig.cs" />
     <Compile Include="Controllers\HomeController.cs" />
     <Compile Include="Controllers\UploadController.cs" />
+    <Compile Include="Controllers\UploadMongoController.cs" />
     <Compile Include="Controllers\ValuesController.cs" />
     <Compile Include="Global.asax.cs">
       <DependentUpon>Global.asax</DependentUpon>
@@ -135,6 +142,7 @@
     <Compile Include="Infrastructure\CustomMultipartFormDataStreamProvider.cs" />
     <Compile Include="Models\FileDesc.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Repositorio\Repositorio.cs" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="Content\themes\base\images\ui-bg_flat_0_aaaaaa_40x100.png" />

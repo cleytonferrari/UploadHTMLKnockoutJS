@@ -33,8 +33,34 @@
         }
     };
 
+    self.enviarArquivoMongo = function() {
+        var photo = document.getElementById("arquivo");
+        var files = photo.files;
 
+        if (files.length > 0) {
+            if (window.FormData !== undefined) {
+                var data = new window.FormData();
+                for (var i = 0; i < files.length; i++) {
+                    data.append("file" + i, files[i]);
+                }
 
+                $.ajax({
+                    type: "POST",
+                    url: "/api/UploadMongo",
+                    contentType: false,
+                    processData: false,
+                    data: data,
+                    success: function(res) {
+                        var array = self.uploads();
+                        ko.utils.arrayPushAll(array, res);
+                        self.uploads.valueHasMutated();
+                    }
+                });
+            } else {
+                console.log("Browser não suportado");
+            }
+        }
+    };
 }
 
 var vm = new ViewModel();

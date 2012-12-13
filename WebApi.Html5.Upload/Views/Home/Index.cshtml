@@ -6,9 +6,10 @@
     </li>
 </ul>
 
-<form action="/api/upload" method="post" enctype="multipart/form-data">
+<form method="post" enctype="multipart/form-data">
     <label for="arquivo">Arquivo</label>
 
     <input name="arquivo" id="arquivo" type="file" value="" />
-    <input type="submit" data-bind="click: enviarArquivo" value="Submit" />
+    <input type="submit" data-bind="click: enviarArquivo" value="Salvar no Disco" />
+    <input type="submit" data-bind="click: enviarArquivoMongo" value="Salvar no Mongo" />
 </form>
