@@ -1,55 +1,63 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Net;
 using System.Net.Http;
+using System.Text;
 using System.Threading.Tasks;
 using System.Web;
 using System.Web.Http;
-using System.Web.Mvc;
-using WebApi.Html5.Upload.Infrastructure;
 using WebApi.Html5.Upload.Models;
 
 namespace WebApi.Html5.Upload.Controllers
 {
     public class UploadMongoController : ApiController
     {
-        public Task<IEnumerable<FileDesc>> Post()
+        public async Task<IEnumerable<FileDesc>> Post()
         {
-            const string nomeDaPasta = "uploads";
-            var path = HttpContext.Current.Server.MapPath("~/" + nomeDaPasta);
-            var rootUrl = Request.RequestUri.AbsoluteUri.Replace(Request.RequestUri.AbsolutePath, String.Empty);
+            if (!Request.Content.IsMimeMultipartContent())
+                throw new HttpResponseException(HttpStatusCode.UnsupportedMediaType);
 
-            if (Request.Content.IsMimeMultipartContent())
+            var root = HttpContext.Current.Server.MapPath("~/App_Data");
+            var provider = new MultipartFormDataStreamProvider(root);
+
+            try
             {
-                var streamProvider = new CustomMultipartFormDataStreamProvider(path);
-                var task = Request.Content.ReadAsMultipartAsync(streamProvider).ContinueWith(t =>
+                var sb = new StringBuilder();
+
+                await Request.Content.ReadAsMultipartAsync(provider);
+
+                //usado para pegar os outros dados do formulario, alem do arquivo.
+                foreach (var key in provider.FormData.AllKeys)
                 {
+                    foreach (var val in provider.FormData.GetValues(key))
+                        sb.Append(string.Format("{0}: {1}\n", key, val));
+                }
 
-                    if (t.IsFaulted || t.IsCanceled)
-                        throw new HttpResponseException(HttpStatusCode.InternalServerError);
+                var retorno = new List<FileDesc>();
+                //pega os arquivos
+                foreach (var file in provider.FileData)
+                {
+                    var fileInfo = new FileInfo(file.LocalFileName);
+                    sb.Append(string.Format("Uploaded file: {0} ({1} bytes)\n", fileInfo.Name, fileInfo.Length));
 
-                    var fileInfo = streamProvider.FileData.Select(i =>
-                    {
-                        var info = new FileInfo(i.LocalFileName);
-                        //---------- SALVA NO MONGO
-                        var repositorio = new Repositorio.Repositorio<String>();
-                        var caminho = path + "/" + info.Name;
-                        var fileee = new FileStream(caminho, FileMode.Open);
+                    var repositorio = new Repositorio.Repositorio<String>();
+                    var caminho = root + "/" + fileInfo.Name;
 
-                        repositorio.InserirArquivo(fileee, info.Name, "image/jpeg");
-                        //--------- FIM
-                        return new FileDesc(info.Name, rootUrl + "/" + nomeDaPasta + "/" + info.Name, info.Length / 1024);
-                    });
-                    return fileInfo;
-                });
+                    var streamDoArquivo = new FileStream(caminho, FileMode.Open);
+                    var nomeDoArquivo = file.Headers.ContentDisposition.FileName; //fileInfo.Name;
+                    var tipoDoArquivo = file.Headers.ContentType.ToString();
+                    var id = repositorio.InserirArquivo(streamDoArquivo, nomeDoArquivo, tipoDoArquivo);
 
-                return task;
+                    retorno.Add(new FileDesc(nomeDoArquivo, id, fileInfo.Length / 1024));
+                }
+                return retorno;
+
             }
-
-            throw new HttpResponseException(Request.CreateResponse(HttpStatusCode.NotAcceptable, "A requisição não esta bem formatada"));
+            catch (Exception e)
+            {
+                throw new HttpResponseException(Request.CreateResponse(HttpStatusCode.InternalServerError, e));
+            }
         }
-
     }
 }
